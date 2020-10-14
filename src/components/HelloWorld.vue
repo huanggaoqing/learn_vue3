@@ -4,6 +4,7 @@
     <p>{{cloneCount}} ===>> cloneCount</p>
     <p>{{value}} ===>> {{title}}</p>
     <p>{{countTwo}} ===>> 计算属性处理后的 count</p>
+    <p>{{$store.state.gloubCount}} ===>> vuex 中全局的 count</p>
     <button @click="add" >click add</button>
     <slot></slot>
     <test></test>
@@ -11,28 +12,33 @@
 </template>
 
 <script>
-import { reactive, ref, computed, watch, watchEffect, getCurrentInstance, toRefs, provide } from 'vue'
+import { reactive, ref, computed, watch, watchEffect, getCurrentInstance, toRefs, provide, onMounted, onBeforeMount, onUpdated, onBeforeUpdate, onBeforeUnmount, onUnmounted } from 'vue'
 import test from './test.vue'
 export default {
   name: 'HelloWorld',
   props:{
     msg: String
   },
+
   /**
    * 在 setup 组合式API 里使用状态和方法不用加 this 直接通过名字去访问对应的状态和方法就可以了
    * 有两个参数 props 和 context
    * props 是指该组件中接收的 props 对象
    * context 可以访问 Vue 实例中的 this
+   * setup 的调用在 beforeCreate 之后，created 之前
    */
   setup(props, context){
+
+    // 可以访问 Vue 实例中的 this
     console.log("setup -> context", context)
+    // 组件中接收的 props 对象 不能结构 不然会失去响应性
     console.log("setup -> props", props.msg)
+
     /**
      * getCurrentInstance 方法返回的是当前组件的实例对象
      * ctx 是上下文对象， 这样我们就可以使用 router 和 vuex 这些在 Vue 实例上的方法了
      */
-    let { ctx } = getCurrentInstance()
-    console.log('ctx', ctx);
+    let { ctx:{ $store } } = getCurrentInstance()
 
     // 状态的两种声明方式
     let count = ref(0) // 单个声明状态 相当于useState 创建出来的数据本身就是响应式的不依赖于谁
@@ -43,6 +49,7 @@ export default {
     let add = () => {
       ++count.value
       ++num.value
+      $store.commit('setGloubCount') // 触发改变 vuex 状态的方法
       num.title = 'Hello Vue3'
     }
 
@@ -68,7 +75,36 @@ export default {
 
     // 向子孙组件传递数据 两个参数 第一个是名字 第二个是值
     provide('count', count)
+
+    /**
+     * 需要使用 reactive 创建的对象里的单独一个属性值的时候， 需要使用 toRefs 将对象中的每个值都变成响应式的
+     * 因为 reactive 创建的对象 只有对象本身具有响应式，属性值不具有响应式 所以为了保证响应式就需要让每个值都具有响应式
+     */
     provide('title', toRefs(num).title)
+
+
+    // 生命周期写法
+    // 只在初始化时执行一次
+    onBeforeMount(() => {
+      console.log('渲染完成之前')
+    })
+    onMounted(() => {
+      console.log('渲染完成之后')
+    })
+    // 初始化时不会执行 会有多次触发
+    onBeforeUpdate(() => {
+      console.log('数据改变，视图重新渲染完成前')
+    })
+    onUpdated(() => {
+      console.log('数据改变，视图重新渲染完成后')
+    })
+    // 只在组件卸载时执行一次
+    onBeforeUnmount(() => {
+      console.log('卸载之前')
+    })
+    onUnmounted(() => {
+      console.log('卸载之后')
+    })
     
     return {
       count,
