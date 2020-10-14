@@ -36,9 +36,10 @@ export default {
 
     /**
      * getCurrentInstance 方法返回的是当前组件的实例对象
-     * ctx 是上下文对象， 这样我们就可以使用 router 和 vuex 这些在 Vue 实例上的方法了
+     * ctx 是上下文对象， 里面包含了全局的方法以及全局属性
      */
-    let { ctx:{ $store } } = getCurrentInstance()
+    let { ctx:{ $store, $fn } } = getCurrentInstance()
+    console.log("setup -> getCurrentInstance", getCurrentInstance())
 
     // 状态的两种声明方式
     let count = ref(0) // 单个声明状态 相当于useState 创建出来的数据本身就是响应式的不依赖于谁
@@ -46,12 +47,6 @@ export default {
       value: 1,
       title: '这是一个对象变量'
     })
-    let add = () => {
-      ++count.value
-      ++num.value
-      $store.commit('setGloubCount') // 触发改变 vuex 状态的方法
-      num.title = 'Hello Vue3'
-    }
 
     let cloneCount = count
 
@@ -105,6 +100,15 @@ export default {
     onUnmounted(() => {
       console.log('卸载之后')
     })
+
+    // 事件函数
+    let add = () => {
+      ++count.value
+      ++num.value
+      $store.commit('setGloubCount') // 触发改变 vuex 状态的方法
+      num.title = 'Hello Vue3'
+      $fn()
+    }
     
     return {
       count,
