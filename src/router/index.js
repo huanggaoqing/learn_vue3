@@ -18,6 +18,8 @@ const routes = [
 ]
 
 const router = createRouter({
+  // 部署在非根目录
+  base:'/ss_internetHospital',
   history: createWebHashHistory(),
   routes
 })

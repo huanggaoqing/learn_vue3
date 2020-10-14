@@ -62,6 +62,10 @@ export default {
     watch(() => num.value, (newVal, oldVal) => {
       console.log("监听 num.value 中...", `新${newVal}---旧${oldVal}`)
     })
+    // 监听多个值
+    watch([count, () => num.value], (newArr, oldArr) => {
+      console.log("多个监听中...", `新${newArr}---旧${oldArr}`)
+    })
 
     // 作用是监听 有点像 useEffect 除了初始化执行一次以外，依赖项发生变化时也会执行， 和 watch 不同的是，它初始化时会执行一次
     watchEffect(() => {
